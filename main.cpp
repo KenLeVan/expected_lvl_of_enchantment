@@ -31,7 +31,7 @@ private:
     rarity item_rarity;
     int lvl;
 
-    int get_seccess_chance() const
+    int get_success_chance() const
     {
         const auto& chance = CHANCE_TABLE.at(item_rarity);
         return chance[lvl];
@@ -40,14 +40,14 @@ public:
     item(rarity new_rarity = rarity::common, int new_lvl = 0) : item_rarity(new_rarity), lvl(new_lvl) {}
     ~item() {}
 
-    int get_lvl() { return lvl; };
-    rarity get_rarity() { return item_rarity; };
+    int get_lvl() const { return lvl; };
+    rarity get_rarity() const { return item_rarity; };
 
     void attempt_upgrade()
     {
         if (lvl == 10) { return; }
 
-        int chance = get_seccess_chance();
+        int chance = get_success_chance();
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<> distrib(1, 100);
@@ -101,12 +101,17 @@ std::string rarity_to_string (const rarity& r)
 
 void find_expected_lvls_of_enchantments (std::map<int, int>& counts,
                                         const int& number_of_trials,
-                                        item my_item)
+                                        item& my_item)
 {
     if (my_item.get_rarity() == rarity::invalid || number_of_trials <= 0) { return; }
 
+    std::mt19937 gen;
     for (int i = 0; i < number_of_trials; ++i)
     {
+        if (my_item.get_lvl() == 10)
+        {
+            break;
+        }
         my_item.attempt_upgrade();
         ++counts[my_item.get_lvl()];
     }
@@ -114,20 +119,10 @@ void find_expected_lvls_of_enchantments (std::map<int, int>& counts,
 
 void output_map(std::map<int, int>& counts)
 {
+    std::cout << "The list of counts on each lvl" << std::endl;
     for (int i = 0; i < counts.size(); ++i)
     {
-        std::cout << "The list of counts on each lvl" << std::endl
-        << "0: " << counts[0] << std::endl
-        << "1: " << counts[1] << std::endl
-        << "2: " << counts[2] << std::endl
-        << "3: " << counts[3] << std::endl
-        << "4: " << counts[4] << std::endl
-        << "5: " << counts[5] << std::endl
-        << "6: " << counts[6] << std::endl
-        << "7: " << counts[7] << std::endl
-        << "8: " << counts[8] << std::endl
-        << "9: " << counts[9] << std::endl
-        << "10: " << counts[10] << std::endl;
+        std::cout << i << ": " << counts[i] << std::endl;
     }
 }
 
